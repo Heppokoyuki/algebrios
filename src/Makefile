@@ -12,5 +12,5 @@ run:
 clean:
 	rm -f *~ ../include/*~ *.o *.map $(TARGET)
 
-.PHONY: clean 
+.PHONY: clean run
 
