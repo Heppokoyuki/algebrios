@@ -8,7 +8,8 @@
 
 entry:
     cli
-    
+
+    lidt (idtr)
     lgdt (gdtr)
 
     /* set to data segment */
@@ -29,7 +30,10 @@ ret_label:
 
     .data
 
+idtr:
     .word 0x0
+    .long 0x0
+    
 gdt:
     .word 0x0, 0x0, 0x0, 0x0 /* null descriptor */
     .word 0xffff, 0x0, 0x9a00, 0xaf /* base=0, limit=4GB, mode=code(rx), kernel */
