@@ -1,5 +1,6 @@
 #include <util.h>
 #include <serial.h>
+#include <asmfunc.h>
 
 void
 panic(char *s)

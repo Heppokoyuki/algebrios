@@ -5,7 +5,7 @@ libuefi.a: $(OBJS)
 	$(AR) rcs $@ $^
 
 %.o: %.c
-	$(CC) $(CFLAGS) -I../../include -c -o $@ $<
+	$(CC) $(CFLAGS) -I../boot/include -c -o $@ $<
 
 clean:
 	rm -f *~ *.o *.a

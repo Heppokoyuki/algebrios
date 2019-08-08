@@ -7,4 +7,3 @@
 extern const unsigned char font_bitmap[][FONT_HEIGHT][FONT_WIDTH];
 
 #endif
-

@@ -8,7 +8,7 @@ poiboot.efi: poiboot.o ../libuefi/libuefi.a
 	$(CC) $(CFLAGS) -e efi_main -o $@ $+
 
 poiboot.o: poiboot.c
-	$(CC) $(CFLAGS) -I../../include -c -o $@ $<
+	$(CC) $(CFLAGS) -Iinclude -c -o $@ $<
 
 ../libuefi/libuefi.a:
 	make -C ../libuefi CC=$(CC) CFLAGS="$(CFLAGS)"

@@ -6,5 +6,7 @@
 uint8_t inb(uint16_t port);
 void outb(uint16_t port, uint8_t value);
 void hlt(void);
+void lgdt(void *gdtr, uint64_t selector);
+void lidt(void *idtr);
 
 #endif

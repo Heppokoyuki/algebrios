@@ -1,6 +1,8 @@
     .globl inb
     .globl outb
     .globl hlt
+    .globl lidt
+    .globl lgdt
 
     .text
     .code64
@@ -21,4 +23,24 @@ outb:
     /** void hlt(void) **/
 hlt:
     hlt
+
+    /** void lgdt(void *gdtr, uint64_t selector) **/
+lgdt:
+    lgdt (%rdi)
+    pushq %rsi
+    movabs $1f, %rax
+    pushq %rax
+    lretq
+1:
+    movq %rsi, %rax
+    addq $8, %rax
+    movq %rax, %ds
+    movq %rax, %es
+    movq %rax, %ss
+    ret
+
+    /** void lidt(void *idtr) **/
+lidt:
+    lidt (%rdi)
+    ret
     
