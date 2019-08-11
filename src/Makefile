@@ -1,8 +1,14 @@
 TARGET = kernel.bin
-CFLAGS = -Wall -Wextra -nostdinc -nostdlib -fno-builtin -fno-common -fno-stack-protector -I../include
+CFLAGS = -Wall -Wextra -mcmodel=large -nostdinc -nostdlib -fno-builtin -fno-common -fno-stack-protector -fno-pie -I../include
 LDFLAGS = -Map kernel.map -s -x -T kernel.ld
 
-$(TARGET): entry.o main.o fb.o fbcon.o font.o asmfunc.o serial.o idt.o handler.o util.o hpet.o acpi.o common.o
+%.o: %.c
+	gcc $(CFLAGS) -c -o $@ $<
+
+%.o: %.c
+	gcc $(CFLAGS) -c -o $@ $<
+
+$(TARGET): entry.o main.o fb.o fbcon.o font.o asmfunc.o serial.o idt.o util.o hpet.o acpi.o pic.o common.o handler.o
 	ld $(LDFLAGS) -o $@ $+
 	cp $(TARGET) ../fs/
 
@@ -21,5 +27,5 @@ write: $(TARGET)
 clean:
 	rm -f *~ ../include/*~ *.o *.map $(TARGET)
 
-.PHONY: clean run
+.PHONY: clean run write
 

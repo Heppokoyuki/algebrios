@@ -1,5 +1,13 @@
 #include <acpi.h>
 #include <fbcon.h>
+#include <pic.h>
+#include <hpet.h>
+#include <common.h>
+#include <idt.h>
+#include <handler.h>
+
+#define TIMER_N 0
+#define US_TO_FS 1000000000
 
 struct HPET_TABLE {
     struct SDTH header;
@@ -11,6 +19,7 @@ struct HPET_TABLE {
 } __attribute__ ((packed));
 
 uint64_t reg_base;
+uint32_t counter_clk_period;
 
 #define GCIDR_ADDR (reg_base)
 #define GCIDR (*(volatile uint64_t *)GCIDR_ADDR)
@@ -41,7 +50,36 @@ union gcr {
 #define MCR_ADDR (reg_base + 0xf0)
 #define MCR (*(volatile uint64_t *)MCR_ADDR)
 
-#define US_TO_FS 1000000000
+#define TNCCR_ADDR(n) (reg_base + (0x20 * (n)) + 0x100)
+#define TNCCR(n) (*(volatile uint64_t *)(TNCCR_ADDR(n)))
+#define TNCCR_INT_TYPE_EDGE 0
+#define TNCCR_INT_TYPE_LEVEL 1
+#define TNCCR_TYPE_NON_PERIODIC 0
+#define TNCCR_TYPE_PERIODIC 1
+union tnccr {
+    uint64_t raw;
+    struct {
+        uint64_t _reserved1:1;
+        uint64_t int_type_cnf:1;
+        uint64_t int_enb_cnf:1;
+        uint64_t type_cnf:1;
+        uint64_t per_int_cap:1;
+        uint64_t size_cap:1;
+        uint64_t val_set_cnf:1;
+        uint64_t _reserved2:1;
+        uint64_t mode32_cnf:1;
+        uint64_t int_route_cnf:5;
+        uint64_t fsb_en_cnf:1;
+        uint64_t fsb_int_del_cap:1;
+        uint64_t _reserved3:16;
+        uint64_t int_route_cap:32;
+    } __attribute__ ((packed));
+};
+
+#define TNCR_ADDR(n) (reg_base + (0x20 * (n)) + 0x108)
+#define TNCR(n) (*(volatile uint64_t *)(TNCR_ADDR(n)))
+
+void (*user_handler)(uint64_t current_rsp) = NULL;
 
 void
 init_hpet(void)
@@ -52,7 +90,29 @@ init_hpet(void)
     union gcr gcr;
     gcr.raw = GCR;
     gcr.enable_cnf = 0;
+    gcr.leg_rt_cnf = 1;
     GCR = gcr.raw;
+
+    union gcidr gcidr;
+    gcidr.raw = GCIDR;
+    counter_clk_period = gcidr.counter_clk_period;
+
+    union tnccr tnccr;
+    tnccr.raw = TNCCR(TIMER_N);
+    tnccr.int_type_cnf = TNCCR_INT_TYPE_EDGE;
+    tnccr.int_enb_cnf = 0;
+    tnccr.type_cnf = TNCCR_TYPE_NON_PERIODIC;
+    tnccr.val_set_cnf = 0;
+    tnccr.mode32_cnf = 0;
+    tnccr.fsb_en_cnf = 0;
+    tnccr._reserved1 = 0;
+    tnccr._reserved2 = 0;
+    tnccr._reserved3 = 0;
+    TNCCR(TIMER_N) = tnccr.raw;
+
+    set_intr_gate(HPET_INTR_NO, hpet_handler);
+
+    enable_pic_intr(HPET_INTR_NO);
 }
 
 void
@@ -132,5 +192,53 @@ sleep(uint64_t us)
         gcr.enable_cnf = 0;
         GCR = gcr.raw;
     }
+}
+
+void
+do_hpet_interrupt(uint64_t current_rsp)
+{
+    puts("HOGE");
+    union gcr gcr;
+    gcr.raw = GCR;
+    gcr.enable_cnf = 0;
+    GCR = gcr.raw;
+
+    union tnccr tnccr;
+    tnccr.raw = TNCCR(TIMER_N);
+    tnccr.int_enb_cnf = 0;
+    tnccr._reserved1 = 0;
+    tnccr._reserved2 = 0;
+    tnccr._reserved3 = 0;
+    TNCCR(TIMER_N) = tnccr.raw;
+
+    if(user_handler)
+        user_handler(current_rsp);
+
+    set_pic_eoi(HPET_INTR_NO);
+}
+
+void
+alert(uint64_t us, void *handler)
+{
+    user_handler = handler;
+    union tnccr tnccr;
+    tnccr.raw = TNCCR(TIMER_N);
+    tnccr.int_enb_cnf = 1;
+    tnccr.type_cnf = TNCCR_TYPE_NON_PERIODIC;
+    tnccr._reserved1 = 0;
+    tnccr._reserved2 = 0;
+    tnccr._reserved3 = 0;
+    TNCCR(TIMER_N) = tnccr.raw;
+
+    MCR = (uint64_t)0;
+
+    uint64_t femt_sec = us * US_TO_FS;
+    uint64_t clk_counts = femt_sec / counter_clk_period;
+    TNCR(TIMER_N) = clk_counts;
+
+    union gcr gcr;
+    gcr.raw = GCR;
+    gcr.enable_cnf = 1;
+    GCR = gcr.raw;
 }
 

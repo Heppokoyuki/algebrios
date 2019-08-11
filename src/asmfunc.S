@@ -1,5 +1,6 @@
     .globl inb
     .globl outb
+    .globl sti
     .globl hlt
     .globl lidt
     .globl lgdt
@@ -23,6 +24,11 @@ outb:
     /** void hlt(void) **/
 hlt:
     hlt
+
+    /** void sti(void) **/
+sti:
+    sti
+    ret
 
     /** void lgdt(void *gdtr, uint64_t selector) **/
 lgdt:

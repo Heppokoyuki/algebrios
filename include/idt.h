@@ -3,7 +3,7 @@
 
 #include <types.h>
 
-#define IDT_ADDR 0x00076000
+#define IDT_ADDR 0x00076000ULL
 #define MAX_INTR_NO 256
 #define SS_KERNEL_CODE 0x0008
 #define SS_KERNEL_DATA 0x0010
@@ -24,10 +24,10 @@ struct IDT_descriptor {
 
 struct IDTR {
     uint16_t limit;
-    uint32_t base;
+    uint64_t base;
 } __attribute__ ((packed));
 
-void set_idt_desc(uint8_t intr_no, void *handler);
+void set_intr_gate(uint8_t intr_no, void *handler);
 struct IDTR *init_idt(void);
 void idt_load(void);
 
