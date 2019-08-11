@@ -11,8 +11,8 @@ init_serial(void)
     /* Enable DLAB */
     outb(COM1_UART + 3, 0x80);
 
-    /* Set baud rate to 38400 */
-    outb(COM1_UART + 0, 0x03);
+    /* Set baud rate to 115200 */
+    outb(COM1_UART + 0, 0x01);
     outb(COM1_UART + 1, 0x00);
 
     /* 8bits, no parity, one stop bit */

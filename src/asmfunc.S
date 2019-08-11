@@ -49,4 +49,5 @@ lgdt:
 lidt:
     lidt (%rdi)
     ret
-    
+
+

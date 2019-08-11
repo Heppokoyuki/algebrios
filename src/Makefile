@@ -1,5 +1,5 @@
 TARGET = kernel.bin
-CFLAGS = -Wall -Wextra -mcmodel=large -nostdinc -nostdlib -fno-builtin -fno-common -fno-stack-protector -fno-pie -I../include
+CFLAGS = -Wall -Wextra -nostdinc -nostdlib -fno-builtin -fno-common -fno-stack-protector -I../include
 LDFLAGS = -Map kernel.map -s -x -T kernel.ld
 
 %.o: %.c

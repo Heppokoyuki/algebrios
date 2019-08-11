@@ -5,6 +5,7 @@
 #include <common.h>
 #include <idt.h>
 #include <handler.h>
+#include <serial.h>
 
 #define TIMER_N 0
 #define US_TO_FS 1000000000
@@ -197,7 +198,7 @@ sleep(uint64_t us)
 void
 do_hpet_interrupt(uint64_t current_rsp)
 {
-    puts("HOGE");
+    puts_serial("debug");
     union gcr gcr;
     gcr.raw = GCR;
     gcr.enable_cnf = 0;
