@@ -18,8 +18,8 @@ struct platform_info {
 void handler(void);
 
 void
-start_kernel(void *_t __attribute__ ((unused)), struct platform_info *pi,
-             void *_fs_start)
+start_kernel(void *_reserved1 __attribute__ ((unused)), struct platform_info *pi,
+             void *_reserved2 __attribute ((unused)))
 {
     struct IDTR *idtr;
 
