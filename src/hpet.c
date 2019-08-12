@@ -198,7 +198,6 @@ sleep(uint64_t us)
 void
 do_hpet_interrupt(uint64_t current_rsp)
 {
-    puts_serial("debug");
     union gcr gcr;
     gcr.raw = GCR;
     gcr.enable_cnf = 0;
