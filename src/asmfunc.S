@@ -3,6 +3,7 @@
     .globl sti
     .globl hlt
     .globl lidt
+    .globl sidt
     .globl lgdt
 
     .text
@@ -48,6 +49,11 @@ lgdt:
     /** void lidt(void *idtr) **/
 lidt:
     lidt (%rdi)
+    ret
+
+    /** void sidt(void *idtr) **/
+sidt:   
+    sidt (%rdi)
     ret
 
 

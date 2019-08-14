@@ -1,35 +1,20 @@
     .globl default_handler
     .globl hpet_handler
+    .globl easy_handler
     
 default_handler:
     jmp default_handler
 
 hpet_handler:
-    pushq %rax
-    pushq %rcx
-    pushq %rdx
-    pushq %rbx
-    pushq %rbp
-    pushq %rsi
     pushq %rdi
-    pushq %r8
-    pushq %r9
-    pushq %r10
-    pushq %r11
-    mov %rdi, %rsp
+    mov %rsp, %rdi
     call do_hpet_interrupt
-    popq %r11
-    popq %r10
-    popq %r9
-    popq %r8
     popq %rdi
-    popq %rsi
-    popq %rbp
-    popq %rbx
-    popq %rdx
-    popq %rcx
-    popq %rax
     iretq
+
+easy_handler:
+    hlt
+    jmp easy_handler
 
     .macro intr_exception_prolog
     pushq %rbp

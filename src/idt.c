@@ -2,10 +2,15 @@
 #include <types.h>
 #include <asmfunc.h>
 #include <handler.h>
+#include <fbcon.h>
 
 void
 set_idt_gate_desc(struct IDT_descriptor *idt, uint64_t base, uint16_t selector, uint8_t flags)
 {
+    puth(idt, 8);
+    puts(" ");
+    puth(base, 8);
+    puts("\r\n");
     idt->offset_15_0 = (uint16_t)(base & 0xffffULL);
     idt->segment_selector = selector;
     idt->_reserved1 = 0;
@@ -31,7 +36,7 @@ init_idt(void)
     int i;
 
     for(i = 0; i < MAX_INTR_NO; ++i)
-        set_intr_gate(i, &default_handler);
+        set_intr_gate(i, default_handler);
 
     idtr = (struct IDTR *)(IDT_ADDR + sizeof(struct IDT_descriptor) * MAX_INTR_NO);
     idtr->base = IDT_ADDR;

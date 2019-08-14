@@ -3,6 +3,7 @@
 
 void default_handler(void);
 void hpet_handler(void);
+void easy_handler(void);
 void intr_de(void);
 void intr_db(void);
 void intr_nmi(void);

@@ -21,6 +21,8 @@ struct HPET_TABLE {
 
 uint64_t reg_base;
 uint32_t counter_clk_period;
+uint64_t cmpr_clk_counts;
+uint8_t is_oneshot = 0;
 
 #define GCIDR_ADDR (reg_base)
 #define GCIDR (*(volatile uint64_t *)GCIDR_ADDR)
@@ -198,18 +200,22 @@ sleep(uint64_t us)
 void
 do_hpet_interrupt(uint64_t current_rsp)
 {
-    union gcr gcr;
-    gcr.raw = GCR;
-    gcr.enable_cnf = 0;
-    GCR = gcr.raw;
+    if(is_oneshot == 1) {
+        union gcr gcr;
+        gcr.raw = GCR;
+        gcr.enable_cnf = 0;
+        GCR = gcr.raw;
 
-    union tnccr tnccr;
-    tnccr.raw = TNCCR(TIMER_N);
-    tnccr.int_enb_cnf = 0;
-    tnccr._reserved1 = 0;
-    tnccr._reserved2 = 0;
-    tnccr._reserved3 = 0;
-    TNCCR(TIMER_N) = tnccr.raw;
+        union tnccr tnccr;
+        tnccr.raw = TNCCR(TIMER_N);
+        tnccr.int_enb_cnf = 0;
+        tnccr._reserved1 = 0;
+        tnccr._reserved2 = 0;
+        tnccr._reserved3 = 0;
+        TNCCR(TIMER_N) = tnccr.raw;
+
+        is_oneshot = 0;
+    }
 
     if(user_handler)
         user_handler(current_rsp);
@@ -236,9 +242,67 @@ alert(uint64_t us, void *handler)
     uint64_t clk_counts = femt_sec / counter_clk_period;
     TNCR(TIMER_N) = clk_counts;
 
+    is_oneshot = 1;
+
     union gcr gcr;
     gcr.raw = GCR;
     gcr.enable_cnf = 1;
     GCR = gcr.raw;
+}
+
+void
+ptimer_setup(uint64_t us, void *handler)
+{
+    union gcr gcr;
+    gcr.raw = GCR;
+    gcr.enable_cnf = 0;
+    GCR = gcr.raw;
+
+    user_handler = handler;
+
+    union tnccr tnccr;
+    tnccr.raw = TNCCR(TIMER_N);
+    tnccr.int_enb_cnf = 1;
+    tnccr.type_cnf = TNCCR_TYPE_PERIODIC;
+    tnccr._reserved1 = 0;
+    tnccr._reserved2 = 0;
+    tnccr._reserved3 = 0;
+    TNCCR(TIMER_N) = tnccr.raw;
+
+    uint64_t femt_sec = us * US_TO_FS;
+    cmpr_clk_counts = femt_sec / counter_clk_period;
+}
+
+void
+ptimer_start(void)
+{
+    union tnccr tnccr;
+    tnccr.raw = TNCCR(TIMER_N);
+    tnccr.val_set_cnf = 1;
+    TNCCR(TIMER_N) = tnccr.raw;
+    TNCR(TIMER_N) = cmpr_clk_counts;
+
+    MCR = (uint64_t)0;
+
+    union gcr gcr;
+    gcr.raw = GCR;
+    gcr.enable_cnf = 1;
+    GCR = gcr.raw;
+}
+
+void ptimer_stop(void)
+{
+    union gcr gcr;
+    gcr.raw = GCR;
+    gcr.enable_cnf = 0;
+    GCR = gcr.raw;
+
+    union tnccr tnccr;
+    tnccr.raw = TNCCR(TIMER_N);
+    tnccr.int_enb_cnf = 0;
+    tnccr._reserved1 = 0;
+    tnccr._reserved2 = 0;
+    tnccr._reserved3 = 0;
+    TNCCR(TIMER_N) = tnccr.raw;
 }
 

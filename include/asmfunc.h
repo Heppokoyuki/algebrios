@@ -9,6 +9,7 @@ void hlt(void);
 void sti(void);
 void lgdt(void *gdtr, uint64_t selector);
 void lidt(void *idtr);
+void sidt(void *idtr);
 
 
 #endif

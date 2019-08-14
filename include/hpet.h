@@ -11,5 +11,8 @@ void dump_gcr(void);
 void dump_mcr(void);
 void sleep(uint64_t us);
 void alert(uint64_t us, void *handler);
+void ptimer_setup(uint64_t us, void *handler);
+void ptimer_start(void);
+void ptimer_stop(void);
 
 #endif
