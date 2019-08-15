@@ -7,10 +7,6 @@
 void
 set_idt_gate_desc(struct IDT_descriptor *idt, uint64_t base, uint16_t selector, uint8_t flags)
 {
-    puth(idt, 8);
-    puts(" ");
-    puth(base, 8);
-    puts("\r\n");
     idt->offset_15_0 = (uint16_t)(base & 0xffffULL);
     idt->segment_selector = selector;
     idt->_reserved1 = 0;

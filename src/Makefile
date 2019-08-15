@@ -8,7 +8,7 @@ LDFLAGS = -Map kernel.map -s -x -T kernel.ld
 %.o: %.c
 	gcc $(CFLAGS) -c -o $@ $<
 
-$(TARGET): entry.o main.o fb.o fbcon.o font.o asmfunc.o serial.o idt.o util.o hpet.o acpi.o pic.o common.o handler.o
+$(TARGET): entry.o main.o fb.o fbcon.o font.o asmfunc.o serial.o idt.o util.o hpet.o acpi.o pic.o common.o handler.o sched.o paging.o
 	ld $(LDFLAGS) -o $@ $+
 	cp $(TARGET) ../fs/
 

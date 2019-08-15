@@ -6,15 +6,26 @@
 
 #define CONF_FILE_NAME	L"poiboot.conf"
 
+#define MEM_DESC_SIZE	4800
+
 #define KERNEL_FILE_NAME	L"kernel.bin"
 #define FS_FILE_NAME	L"fs.img"
 
 #define MB		1048576	/* 1024 * 1024 */
 
+struct memory_map {
+    unsigned long long mmap_size;
+    unsigned char *mem_desc;
+    unsigned long long map_key;
+    unsigned long long mem_desc_unit_size;
+    unsigned int desc_ver;
+};
+
 struct platform_info {
     struct fb fb;
     void *rsdp;
-} __attribute__ ((packed)) pi;
+    struct memory_map map;
+} pi;
 
 void load_config(
 	struct EFI_FILE_PROTOCOL *root, unsigned short *conf_file_name,
@@ -31,13 +42,15 @@ void put_param(unsigned short *name, unsigned long long val);
 
 void efi_main(void *ImageHandle, struct EFI_SYSTEM_TABLE *SystemTable)
 {
+    unsigned long long status;
+
 	efi_init(SystemTable);
 
 	puts(L"Starting poiboot ...\r\n");
 
 	/* ボリュームのルートディレクトリを開く */
 	struct EFI_FILE_PROTOCOL *root;
-	unsigned long long status = SFSP->OpenVolume(SFSP, &root);
+	status = SFSP->OpenVolume(SFSP, &root);
 	assert(status, L"SFSP->OpenVolume");
 
 	/* コンフィグファイル・カーネルバイナリ・ファイルシステムイメージを
@@ -58,6 +71,37 @@ void efi_main(void *ImageHandle, struct EFI_SYSTEM_TABLE *SystemTable)
     pi.fb.hr = fb.hr;
     pi.fb.vr = fb.vr;
     pi.rsdp = find_efi_acpi_table();
+    init_memmap();
+    get_memmap(&pi.map.mmap_size, &pi.map.mem_desc, &pi.map.map_key,
+               &pi.map.mem_desc_unit_size, &pi.map.desc_ver);
+
+    puts(L"hoge: ");
+    puth(pi.map.mem_desc, 10);
+    puts(L"\r\n");
+
+    struct EFI_MEMORY_DESCRIPTOR *p =
+		(struct EFI_MEMORY_DESCRIPTOR *)pi.map.mem_desc;
+	unsigned int i;
+
+	for (i = 0; i < pi.map.mmap_size / pi.map.mem_desc_unit_size; i++) {
+		puth((unsigned long long)p, 16);
+		putc(L' ');
+		puth(p->Type, 2);
+		putc(L' ');
+		puth(p->PhysicalStart, 16);
+		putc(L' ');
+		puth(p->VirtualStart, 16);
+		putc(L' ');
+		puth(p->NumberOfPages, 16);
+		putc(L' ');
+		puth(p->Attribute, 16);
+		puts(L"\r\n");
+
+		p = (struct EFI_MEMORY_DESCRIPTOR *)(
+			(unsigned char *)p + pi.map.mem_desc_unit_size);
+	}
+
+    put_param(L"mmap_size", pi.map.mmap_size);
     unsigned long long kernel_arg2 = (unsigned long long)&pi;
 	put_param(L"kernel_arg2", kernel_arg2);
 	unsigned long long kernel_arg3;

@@ -2,9 +2,10 @@
     .globl outb
     .globl sti
     .globl hlt
+    .globl lgdt
     .globl lidt
     .globl sidt
-    .globl lgdt
+    .globl set_cr3
 
     .text
     .code64
@@ -56,4 +57,8 @@ sidt:
     sidt (%rdi)
     ret
 
+    /** void set_cr3(uint64_t cr3) **/
+set_cr3:    
+    mov %cr3, %rdi
+    ret
 

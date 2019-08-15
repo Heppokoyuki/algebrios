@@ -1,4 +1,3 @@
-
 ----
 0x00074000
 ~           GDT(8KiB)
@@ -11,4 +10,8 @@
 0x00110000 
 ~           kernel_code(960KiB)
 0x00200000
+----
+0x77cc0000
+~           kernel_base_page_table
+0x784c0000
 ----

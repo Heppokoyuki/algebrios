@@ -10,4 +10,6 @@ typedef signed int int32_t;
 typedef signed short int16_t;
 typedef signed char int8_t;
 
+typedef int* uintptr_t;
+
 #endif

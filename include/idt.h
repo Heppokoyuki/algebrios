@@ -2,8 +2,9 @@
 #define _IDT_H_
 
 #include <types.h>
+#include <algebrios.h>
 
-#define IDT_ADDR 0x00076000ULL
+#define IDT_ADDR KERNEL_RESERVED_IDT_START
 #define MAX_INTR_NO 256
 #define SS_KERNEL_CODE 0x0008
 #define SS_KERNEL_DATA 0x0010

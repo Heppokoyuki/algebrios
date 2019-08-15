@@ -8,13 +8,18 @@
 #include <common.h>
 #include <asmfunc.h>
 #include <idt.h>
+#include <sched.h>
 #include <handler.h>
+#include <memory.h>
+#include <paging.h>
 
 /* Information by bootloader */
+
 struct platform_info {
     struct framebuffer fb;
     void *rsdp;
-} __attribute__ ((packed));
+    struct memory_map map;
+};
 
 void handler(void);
 
@@ -24,14 +29,20 @@ start_kernel(void *_reserved1 __attribute__ ((unused)), struct platform_info *pi
 {
     struct IDTR *idtr;
     struct IDTR idtr2;
-
     struct IDT_descriptor *idt;
+    struct memory_descriptor *p;
+
+    uint64_t mem_desc_num;
+    uint64_t available_memory_sum = 0;
 
     /* screen initalize */
     fb_init(&pi->fb);
-    set_fg(255, 255, 255);
-    set_bg(0, 70, 250);
+    set_fg(0, 0, 0); /* white */
+    set_bg(255, 255, 255); /* black */
     clear_screen();
+
+    /* kernel page table setup */
+    init_kernel_page_table();
 
     init_acpi(pi->rsdp);
 
@@ -44,35 +55,36 @@ start_kernel(void *_reserved1 __attribute__ ((unused)), struct platform_info *pi
     init_hpet();
     /* init_serial(); */
 
-    ptimer_setup(1 * SEC_TO_US, handler);
+    /* Scheduler initalize */
+    //init_sched();
 
-    sidt(&idtr2);
-    puts("IDTR ");
-    for(int i = 0; i < 10; ++i) {
-        puth(*((uint8_t *)&idtr2 + i), 2);
-        puts(" ");
-    }
-    puts("\r\n");
-    puth(idtr2.base, 10);
-    puts(" ");
-    puth(idtr2.limit, 10);
-    puts("\r\n");
+    /* sidt(&idtr2); */
+    /* puts("IDTR "); */
+    /* for(int i = 0; i < 10; ++i) { */
+    /*     puth(*((uint8_t *)&idtr2 + i), 2); */
+    /*     puts(" "); */
+    /* } */
+    /* puts("\r\n"); */
+    /* puth(idtr2.base, 10); */
+    /* puts(" "); */
+    /* puth(idtr2.limit, 10); */
+    /* puts("\r\n"); */
 
-    puts("IDT DESCRIPTOR ");
-    puth(sizeof(struct IDT_descriptor), 5);
-    puts("\r\n");
-    puts("UINT64 ");
-    puth(sizeof(uint64_t), 5);
-    puts("\r\n");
-    puts("UINT32 ");
-    puth(sizeof(uint32_t), 5);
-    puts("\r\n");
-    puts("UINT16 ");
-    puth(sizeof(uint16_t), 5);
-    puts("\r\n");
-    puts("UINT8 ");
-    puth(sizeof(uint8_t), 5);
-    puts("\r\n");
+    /* puts("IDT DESCRIPTOR "); */
+    /* puth(sizeof(struct IDT_descriptor), 5); */
+    /* puts("\r\n"); */
+    /* puts("UINT64 "); */
+    /* puth(sizeof(uint64_t), 5); */
+    /* puts("\r\n"); */
+    /* puts("UINT32 "); */
+    /* puth(sizeof(uint32_t), 5); */
+    /* puts("\r\n"); */
+    /* puts("UINT16 "); */
+    /* puth(sizeof(uint16_t), 5); */
+    /* puts("\r\n"); */
+    /* puts("UINT8 "); */
+    /* puth(sizeof(uint8_t), 5); */
+    /* puts("\r\n"); */
 
     /* exception handler */
     set_intr_gate(0, intr_de);
@@ -85,17 +97,6 @@ start_kernel(void *_reserved1 __attribute__ ((unused)), struct platform_info *pi
     set_intr_gate(8, intr_df);
     set_intr_gate(9, intr_cso);
     set_intr_gate(10, intr_ts);
-    /* set_intr_gate(0, easy_handler); */
-    /* set_intr_gate(1, easy_handler); */
-    /* set_intr_gate(2, easy_handler); */
-    /* set_intr_gate(3, easy_handler); */
-    /* set_intr_gate(4, easy_handler); */
-    /* set_intr_gate(5, easy_handler); */
-    /* set_intr_gate(6, easy_handler); */
-    /* set_intr_gate(7, easy_handler); */
-    /* set_intr_gate(8, easy_handler); */
-    /* set_intr_gate(9, easy_handler); */
-    /* set_intr_gate(10, easy_handler); */
     set_intr_gate(11, intr_np);
     set_intr_gate(12, intr_ss);
     set_intr_gate(13, intr_gp);
@@ -105,45 +106,63 @@ start_kernel(void *_reserved1 __attribute__ ((unused)), struct platform_info *pi
     set_intr_gate(19, intr_xm);
     set_intr_gate(20, intr_ve);
     set_intr_gate(30, intr_sx);
-    /* set_intr_gate(11, easy_handler); */
-    /* set_intr_gate(12, easy_handler); */
-    /* set_intr_gate(13, easy_handler); */
-    /* set_intr_gate(14, easy_handler); */
-    /* set_intr_gate(16, easy_handler); */
-    /* set_intr_gate(17, easy_handler); */
-    /* set_intr_gate(18, easy_handler); */
-    /* set_intr_gate(19, easy_handler); */
-    /* set_intr_gate(20, easy_handler); */
-    /* set_intr_gate(30, easy_handler); */
 
-    puts("IDT\r\n");
-    for(int i = 0; i < 10; ++i) {
-        puth(i, 2);
-        puts(" ");
-        idt = idtr2.base + i * sizeof(struct IDT_descriptor);
-        puts("OFFSET1 ");
-        puth(idt->offset_15_0, 5);
-        puts(" ");
-        puts("SEGMENT SELECTOR ");
-        puth(idt->segment_selector, 5);
-        puts(" ");
-        puts("FLAGS ");
-        puth(idt->flags, 5);
-        puts(" ");
-        puts("OFFSET2 ");
-        puth(idt->offset_31_16, 5);
-        puts(" ");
-        puts("OFFSET3 ");
-        puth(idt->offset_63_32, 5);
-        puts("\r\n");
+    /* puts("IDT\r\n"); */
+    /* for(int i = 0; i < 10; ++i) { */
+    /*     puth(i, 2); */
+    /*     puts(" "); */
+    /*     idt = idtr2.base + i * sizeof(struct IDT_descriptor); */
+    /*     puts("OFFSET1 "); */
+    /*     puth(idt->offset_15_0, 5); */
+    /*     puts(" "); */
+    /*     puts("SEGMENT SELECTOR "); */
+    /*     puth(idt->segment_selector, 5); */
+    /*     puts(" "); */
+    /*     puts("FLAGS "); */
+    /*     puth(idt->flags, 5); */
+    /*     puts(" "); */
+    /*     puts("OFFSET2 "); */
+    /*     puth(idt->offset_31_16, 5); */
+    /*     puts(" "); */
+    /*     puts("OFFSET3 "); */
+    /*     puth(idt->offset_63_32, 5); */
+    /*     puts("\r\n"); */
+    /* } */
+
+    /* dump memory map */
+    mem_desc_num = pi->map.mmap_size / pi->map.mem_desc_unit_size;
+    puts("AVAILABLE MEMORY\r\n");
+    p = (struct memory_descriptor *)pi->map.mem_desc;
+    for(int i = 0; i < mem_desc_num; ++i) {
+        struct memory_descriptor * next_p;
+        next_p = (struct memory_descriptor *)((unsigned char *)p + pi->map.mem_desc_unit_size);
+        if(p->type == EfiBootServicesCode ||
+           p->type == EfiBootServicesData ||
+           p->type == EfiConventionalMemory ) {
+            puts("START ADDRESS ");
+            puth(p->ps, 16);
+            putc(' ');
+            puts("END ADDRESS ");
+            puth(next_p->ps, 16);
+            puts("\r\n");
+            available_memory_sum += next_p->ps - p->ps;
+        }
+        p = next_p;
     }
+
+    puts("AVAILABLE MEMORY SUM ");
+    putd(available_memory_sum / 1024 / 1024, 5);
+    puts("MiB\r\n");
+
+    while(1)
+        hlt();
 
     puts("HELLO WORLD!\r\n");
     /* puts_serial("HELLO WORLD!\n"); */
 
     sti();
 
-    ptimer_start();
+    sched_start();
 
     while(1)
         hlt();
@@ -213,8 +232,4 @@ isr_exception_werror(uint32_t vec, uint64_t error, uint64_t rip, uint64_t cs,
     while(1)
         hlt();
 }
-
-
-
-
 

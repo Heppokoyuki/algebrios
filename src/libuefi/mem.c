@@ -8,6 +8,8 @@ unsigned char mem_desc[MEM_DESC_SIZE];
 unsigned long long mem_desc_num;
 unsigned long long mem_desc_unit_size;
 unsigned long long map_key;
+unsigned long long mmap_size;
+unsigned int desc_ver;
 
 void dump_memmap(void)
 {
@@ -37,8 +39,7 @@ void dump_memmap(void)
 void init_memmap(void)
 {
 	unsigned long long status;
-	unsigned long long mmap_size = MEM_DESC_SIZE;
-	unsigned int desc_ver;
+	mmap_size = MEM_DESC_SIZE;
 
 	status = ST->BootServices->GetMemoryMap(
 		&mmap_size, (struct EFI_MEMORY_DESCRIPTOR *)mem_desc, &map_key,
@@ -68,8 +69,6 @@ struct EFI_MEMORY_DESCRIPTOR *get_allocatable_area(unsigned long long size)
 void exit_boot_services(void *IH)
 {
 	unsigned long long status;
-	unsigned long long mmap_size;
-	unsigned int desc_ver;
 
 	do {
 		mmap_size = MEM_DESC_SIZE;
@@ -81,3 +80,17 @@ void exit_boot_services(void *IH)
 	status = ST->BootServices->ExitBootServices(IH, map_key);
 	assert(status, L"ExitBootServices");
 }
+
+void get_memmap(unsigned long long *_mmap_size, unsigned char **_mem_desc,
+                unsigned long long *_map_key, unsigned long long *_mem_desc_unit_size,
+                unsigned int *_desc_ver)
+{
+    puth(mem_desc, 10);
+    puts(L"\r\n");
+    *_mmap_size = mmap_size;
+    *_mem_desc = mem_desc;
+    *_map_key = map_key;
+    *_mem_desc_unit_size = mem_desc_unit_size;
+    *_desc_ver = desc_ver;
+}
+
