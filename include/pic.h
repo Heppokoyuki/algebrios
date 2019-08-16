@@ -1,7 +1,7 @@
 #ifndef _PIC_H_
 #define _PIC_H_
 
-#include <types.h>
+#include <stdint.h>
 
 void init_pic(void);
 void enable_pic_intr(uint8_t intr_no);

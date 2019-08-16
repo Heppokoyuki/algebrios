@@ -1,6 +1,6 @@
 /** 4level paging creation and setup **/
 
-#include <types.h>
+#include <stdint.h>
 #include <paging.h>
 #include <fbcon.h>
 #include <asmfunc.h>

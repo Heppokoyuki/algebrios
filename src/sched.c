@@ -1,7 +1,7 @@
 #include <hpet.h>
 #include <pic.h>
 #include <fbcon.h>
-#include <types.h>
+#include <stdint.h>
 #include <asmfunc.h>
 
 #define SCHED_PERIOD (5 * MS_TO_US)

@@ -7,6 +7,12 @@
 #define KERNEL_DATA 0x0010
 
 entry:
+    jmp begin
+    nop
+
+    .asciz "ALGEBRIOS"
+
+begin:  
     cli
 
     lidt (idtr)

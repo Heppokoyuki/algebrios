@@ -1,5 +1,5 @@
 #include <idt.h>
-#include <types.h>
+#include <stdint.h>
 #include <asmfunc.h>
 #include <handler.h>
 #include <fbcon.h>

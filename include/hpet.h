@@ -1,7 +1,7 @@
 #ifndef _HPET_H_
 #define _HPET_H_
 
-#include <types.h>
+#include <stdint.h>
 
 #define MS_TO_US 1000
 #define SEC_TO_US 1000000

@@ -1,5 +1,5 @@
 #include <pic.h>
-#include <types.h>
+#include <stdint.h>
 #include <asmfunc.h>
 
 #define MPIC_ICW1_ADDR	0x0020

@@ -1,5 +1,5 @@
 TARGET = kernel.bin
-CFLAGS = -Wall -Wextra -g -nostdinc -nostdlib -fno-pic -fno-builtin -fno-common -fno-stack-protector -I../include
+CFLAGS = -Wall -Wextra -g -nostdlib -fno-pic -fno-builtin -fno-common -fno-stack-protector -I../include
 LDFLAGS = -Map kernel.map -s -x -T kernel.ld
 
 %.o: %.c
@@ -8,7 +8,7 @@ LDFLAGS = -Map kernel.map -s -x -T kernel.ld
 %.o: %.c
 	gcc $(CFLAGS) -c -o $@ $<
 
-$(TARGET): entry.o main.o fb.o fbcon.o font.o asmfunc.o serial.o idt.o util.o hpet.o acpi.o pic.o common.o handler.o sched.o paging.o
+$(TARGET): entry.o main.o fb.o fbcon.o font.o asmfunc.o serial.o idt.o util.o hpet.o acpi.o pic.o common.o handler.o sched.o paging.o memory.o
 	ld $(LDFLAGS) -o $@ $+
 	cp $(TARGET) ../fs/
 

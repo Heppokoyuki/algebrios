@@ -1,7 +1,7 @@
 #ifndef _ACPI_H_
 #define _ACPI_H_
 
-#include <types.h>
+#include <stdint.h>
 
 struct SDTH {
     char signature[4];

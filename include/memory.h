@@ -1,6 +1,21 @@
 #ifndef _MEMORY_H_
 #define _MEMORY_H_
 
+#include <stdint.h>
+
+#define MEMORY_PAGESIZE (1 << 12)
+
+struct phys_memory_page_block {
+    uint64_t base;
+    uint64_t page_count;
+} __attribute__ ((packed));
+typedef struct phys_memory_page_block phys_memory_page_block_t;
+
+typedef struct {
+    uint16_t block_count;
+    phys_memory_page_block_t pb[MAX_PAGE_FRAME_BLOCK];
+} page_frame_mannager_t;
+
 struct memory_map {
     unsigned long long mmap_size;
     unsigned char *mem_desc;
@@ -38,5 +53,7 @@ typedef enum {
     EfiMaxMemoryType
 } EFI_MEMORY_TYPE;
 
+void init_phys_memory(uint64_t entry_count, uint64_t entry_size, mdesc_t *mdesc, page_frame_mannager_t *pfm);
+void dump_phys_memory_page_block(page_frame_mannager_t *pfm);
 
 #endif

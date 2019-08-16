@@ -9,9 +9,9 @@
 ----
 0x00110000 
 ~           kernel_code(960KiB)
-0x00200000
+0x001fffff
 ----
-0x77cc0000
+0x00200000
 ~           kernel_base_page_table
-0x784c0000
+0x00a00000
 ----

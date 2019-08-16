@@ -1,4 +1,4 @@
-#include <types.h>
+#include <stdint.h>
 #include <acpi.h>
 #include <common.h>
 #include <fbcon.h>

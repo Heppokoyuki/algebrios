@@ -12,4 +12,6 @@ typedef signed char int8_t;
 
 typedef int* uintptr_t;
 
+#define NULL *(0)
+
 #endif

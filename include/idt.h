@@ -1,7 +1,7 @@
 #ifndef _IDT_H_
 #define _IDT_H_
 
-#include <types.h>
+#include <stdint.h>
 #include <algebrios.h>
 
 #define IDT_ADDR KERNEL_RESERVED_IDT_START

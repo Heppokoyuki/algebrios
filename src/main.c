@@ -31,6 +31,7 @@ start_kernel(void *_reserved1 __attribute__ ((unused)), struct platform_info *pi
     struct IDTR idtr2;
     struct IDT_descriptor *idt;
     struct memory_descriptor *p;
+    page_frame_mannager_t pfm;
 
     uint64_t mem_desc_num;
     uint64_t available_memory_sum = 0;
@@ -131,28 +132,31 @@ start_kernel(void *_reserved1 __attribute__ ((unused)), struct platform_info *pi
 
     /* dump memory map */
     mem_desc_num = pi->map.mmap_size / pi->map.mem_desc_unit_size;
-    puts("AVAILABLE MEMORY\r\n");
-    p = (struct memory_descriptor *)pi->map.mem_desc;
-    for(int i = 0; i < mem_desc_num; ++i) {
-        struct memory_descriptor * next_p;
-        next_p = (struct memory_descriptor *)((unsigned char *)p + pi->map.mem_desc_unit_size);
-        if(p->type == EfiBootServicesCode ||
-           p->type == EfiBootServicesData ||
-           p->type == EfiConventionalMemory ) {
-            puts("START ADDRESS ");
-            puth(p->ps, 16);
-            putc(' ');
-            puts("END ADDRESS ");
-            puth(next_p->ps, 16);
-            puts("\r\n");
-            available_memory_sum += next_p->ps - p->ps;
-        }
-        p = next_p;
-    }
+    /* puts("AVAILABLE MEMORY\r\n"); */
+    /* p = (struct memory_descriptor *)pi->map.mem_desc; */
+    /* for(int i = 0; i < mem_desc_num; ++i) { */
+    /*     struct memory_descriptor * next_p; */
+    /*     next_p = (struct memory_descriptor *)((unsigned char *)p + pi->map.mem_desc_unit_size); */
+    /*     if(p->type == EfiBootServicesCode ||*/
+    /*        p->type == EfiBootServicesData || */
+    /*        p->type == EfiConventionalMemory ) { */
+    /*         puts("START ADDRESS "); */
+    /*         puth(p->ps, 16); */
+    /*         putc(' '); */
+    /*         puts("END ADDRESS "); */
+    /*         puth(next_p->ps, 16); */
+    /*         puts("\r\n"); */
+    /*         available_memory_sum += next_p->ps - p->ps; */
+    /*     } */
+    /*     p = next_p; */
+    /* } */
 
-    puts("AVAILABLE MEMORY SUM ");
-    putd(available_memory_sum / 1024 / 1024, 5);
-    puts("MiB\r\n");
+    /* puts("AVAILABLE MEMORY SUM "); */
+    /* putd(available_memory_sum / 1024 / 1024, 5); */
+    /* puts("MiB\r\n"); */
+
+    init_phys_memory(mem_desc_num, pi->map.mem_desc_unit_size, (mdesc_t *)pi->map.mem_desc, &pfm);
+    dump_phys_memory_page_block(&pfm);
 
     while(1)
         hlt();
