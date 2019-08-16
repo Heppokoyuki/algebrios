@@ -53,7 +53,8 @@ typedef enum {
     EfiMaxMemoryType
 } EFI_MEMORY_TYPE;
 
-void init_phys_memory(uint64_t entry_count, uint64_t entry_size, mdesc_t *mdesc, page_frame_mannager_t *pfm);
+uint64_t init_phys_memory(uint64_t entry_count, uint64_t entry_size, mdesc_t *mdesc, page_frame_mannager_t *pfm);
 void dump_phys_memory_page_block(page_frame_mannager_t *pfm);
+void *pfalloc(uint64_t nr, page_frame_mannager_t *pfm);
 
 #endif

@@ -68,7 +68,7 @@ is_transmit_empty(void)
 }
 
 void
-write_serial  (char a)
+write_serial(char a)
 {
     while(!is_transmit_empty());
     outb(COM1_UART, a);

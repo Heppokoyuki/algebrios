@@ -20,34 +20,41 @@ phys_memory_add_region(uint64_t base, uint64_t next, page_frame_mannager_t *pfm)
     pb->page_count = page_count;
     pfm->block_count++;
 
-    puth(base, 10);
-    putc(' ');
-    puth(next, 10);
-    putc(' ');
-    putd((next - base) / 1024 / 1024, 5);
-    puts("MiB ");
-    puth(page_count, 10);
-    puts("\r\n");
-
     return page_count;
 }
 
-void
+static void
 merge_continuous_region(page_frame_mannager_t *pfm)
 {
     phys_memory_page_block_t *pb, *npb;
     uint16_t i, j;
 
+    /* remove empty region */
+    for(i = 0; i < pfm->block_count; ++i) {
+        pb = pfm->pb + i;
+
+        if(!pb->page_count) {
+            for(j = i; j < pfm->block_count - 1; ++j) {
+                pb = pfm->pb + j;
+                npb = pb + 1;
+
+                pb->base = npb->base;
+                pb->page_count = npb->page_count;
+            }
+            pfm->block_count--;
+        }
+    }
+
     for(i = 0; i < pfm->block_count - 1; ++i) {
         pb = pfm->pb + i;
-        npb = pfm->pb + i + 1;
+        npb = pb + 1;
 
         /* merge */
         if(pb->base + pb->page_count * MEMORY_PAGESIZE == npb->base) {
             pb->page_count += npb->page_count;
-            for(j = i + 1; j < pfm->block_count; ++j) {
+            for(j = i + 1; j < pfm->block_count - 1; ++j) {
                 pb = pfm->pb + j;
-                npb = pfm->pb + j + 1;
+                npb = pb + 1;
 
                 pb->base = npb->base;
                 pb->page_count = npb->page_count;
@@ -59,21 +66,52 @@ merge_continuous_region(page_frame_mannager_t *pfm)
     }
 }
 
+/* page frame allocator */
+void *
+pfalloc(uint64_t nr, page_frame_mannager_t *pfm)
+{
+    phys_memory_page_block_t *pb;
+    void *result = NULL;
+    uint16_t i;
+
+    for(i = 0; i < pfm->block_count; ++i) {
+        pb = pfm->pb + i;
+
+        if(pb->page_count >= nr) {
+            result = (void *)pb->base;
+            pb->base += nr * MEMORY_PAGESIZE;
+            pb->page_count -= nr;
+        }
+    }
+
+    merge_continuous_region(pfm);
+    return result;
+}
+
+/* page frame free */
+//TODO
+
 void
 dump_phys_memory_page_block(page_frame_mannager_t *pfm)
 {
     uint16_t i;
 
+    puts("--------------------\r\n");
     for(i = 0; i < pfm->block_count; ++i) {
+        puts("BASE ADDRESS ");
         puth((pfm->pb + i)->base, 10);
-        putc(' ');
+        puts("\r\nBLOCK SIZE ");
+        putd((pfm->pb + i)->page_count * MEMORY_PAGESIZE / 1024 / 1024, 5);
+        puts("MiB");
+        puts("\r\nPAGE COUNT ");
         puth((pfm->pb + i)->page_count, 10);
         puts("\r\n");
+        puts("--------------------\r\n");
     }
 }
 
 
-void
+uint64_t
 init_phys_memory(uint64_t entry_count, uint64_t entry_size, mdesc_t *mdesc, page_frame_mannager_t *pfm)
 {
     mdesc_t *p;
@@ -89,13 +127,6 @@ init_phys_memory(uint64_t entry_count, uint64_t entry_size, mdesc_t *mdesc, page
         next_p = (mdesc_t *)((unsigned char *)p + entry_size);
         base = p->ps;
         next = next_p->ps;
-
-        /* puts("START ADDRESS "); */
-        /* puth(base, 16); */
-        /* putc(' '); */
-        /* puts("END ADDRESS "); */
-        /* puth(next, 16); */
-        /* puts("\r\n"); */
 
         if(p->type != EfiConventionalMemory &&
            p->type != EfiBootServicesCode &&
@@ -129,10 +160,5 @@ init_phys_memory(uint64_t entry_count, uint64_t entry_size, mdesc_t *mdesc, page
 
     merge_continuous_region(pfm);
 
-    puts("FREE PAGE COUNT ");
-    puth(free_page, 10);
-    puts("\r\n");
-    puts("FREE MEMORY ");
-    putd(free_page * MEMORY_PAGESIZE / 1024 / 1024, 5);
-    puts("MiB\r\n");
+    return free_page;
 }
