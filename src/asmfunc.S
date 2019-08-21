@@ -1,5 +1,6 @@
     .globl inb
     .globl outb
+    .globl cli
     .globl sti
     .globl hlt
     .globl lgdt
@@ -12,6 +13,7 @@
 
     /** uint8_t inb(uint16_t port) **/
 inb:
+    movw %di,%dx 
     xorq %rax, %rax
     inb %dx, %al
     ret

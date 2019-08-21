@@ -91,7 +91,7 @@ start_kernel(void *_reserved1 __attribute__ ((unused)), struct platform_info *pi
 
     dump_phys_memory_page_block(&pfm);
 
-    test = pfalloc(1, &pfm);
+    test = pfalloc(3, &pfm);
 
     puts("ALLOCATED ");
     puth(test, 10);
@@ -99,11 +99,16 @@ start_kernel(void *_reserved1 __attribute__ ((unused)), struct platform_info *pi
 
     dump_phys_memory_page_block(&pfm);
 
+    __asm__("cli");
+
     puts("HELLO WORLD!\r\n");
-    puts_serial("HELLO WORLD!\n");
-    puts_serial("HELLO WORLD!\n");
-    
-    sti();
+    puts_serial("HELLO WORLD!");
+    puts_serial("HELLO WORLD!");
+    puts_serial("HELLO WORLD!");
+
+    puts("SHINE");
+
+    //sti();
 
     //sched_start();
 

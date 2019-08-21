@@ -1,6 +1,7 @@
 #include <serial.h>
 #include <stdint.h>
 #include <asmfunc.h>
+#include <fbcon.h>
 
 void
 init_serial(void)
@@ -12,8 +13,8 @@ init_serial(void)
     outb(COM1_UART + 3, 0x80);
 
     /* Set baud rate to 115200 */
-    outb(COM1_UART + 0, 0x01);
-    outb(COM1_UART + 1, 0x00);
+    /* outb(COM1_UART + 0, 0x01); */
+    /* outb(COM1_UART + 1, 0x00); */
 
     /* 8bits, no parity, one stop bit */
     outb(COM1_UART + 3, 0x03);
@@ -64,7 +65,8 @@ gets_serial(char *buf)
 uint8_t
 is_transmit_empty(void)
 {
-    return inb(COM1_UART + 5) & 0x20;
+    putc('.');
+    return inb(COM1_UART + 5) & 0x40;
 }
 
 void
@@ -79,6 +81,7 @@ putc_serial(char a)
 {
     if(a == '\n')
         write_serial('\r');
+    putc(a);
     write_serial(a);
 }
 
