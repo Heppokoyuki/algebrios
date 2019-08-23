@@ -61,6 +61,6 @@ sidt:
 
     /** void set_cr3(uint64_t cr3) **/
 set_cr3:    
-    mov %cr3, %rdi
+    movq %cr3, %rdi
     ret
 

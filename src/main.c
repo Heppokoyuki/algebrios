@@ -25,7 +25,7 @@ void handler(void);
 
 void
 start_kernel(void *_reserved1 __attribute__ ((unused)), struct platform_info *pi,
-             void *_reserved2 __attribute ((unused)))
+             void *_reserved2 __attribute__ ((unused)))
 {
     struct IDTR *idtr;
     page_frame_mannager_t pfm;
@@ -99,16 +99,12 @@ start_kernel(void *_reserved1 __attribute__ ((unused)), struct platform_info *pi
 
     dump_phys_memory_page_block(&pfm);
 
-    __asm__("cli");
-
     puts("HELLO WORLD!\r\n");
     puts_serial("HELLO WORLD!");
     puts_serial("HELLO WORLD!");
     puts_serial("HELLO WORLD!");
 
-    puts("SHINE");
-
-    //sti();
+    sti();
 
     //sched_start();
 
