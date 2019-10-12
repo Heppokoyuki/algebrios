@@ -1,4 +1,5 @@
 #include <fb.h>
+#include <serial.h>
 
 struct framebuffer fb;
 struct pixelformat color_fg;

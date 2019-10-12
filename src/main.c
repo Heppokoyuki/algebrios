@@ -12,6 +12,7 @@
 #include <handler.h>
 #include <memory.h>
 #include <paging.h>
+#include <pci.h>
 
 /* Information by bootloader */
 
@@ -42,7 +43,6 @@ start_kernel(void *_reserved1 __attribute__ ((unused)), struct platform_info *pi
 
     /* kernel page table setup */
     init_kernel_page_table();
-
     init_acpi(pi->rsdp);
 
     /* Descriptors initalize */
@@ -78,6 +78,9 @@ start_kernel(void *_reserved1 __attribute__ ((unused)), struct platform_info *pi
     set_intr_gate(20, intr_ve);
     set_intr_gate(30, intr_sx);
 
+    dump_vid_did(NIC_BUS_NUM, NIC_DEV_NUM, NIC_FUNC_NUM);
+    dump_command_status(NIC_BUS_NUM, NIC_DEV_NUM, NIC_FUNC_NUM);
+
     /* kernel memory manager init */
     mem_desc_num = pi->map.mmap_size / pi->map.mem_desc_unit_size;
     free_page = init_phys_memory(mem_desc_num, pi->map.mem_desc_unit_size, (mdesc_t *)pi->map.mem_desc, &pfm);
@@ -106,7 +109,7 @@ start_kernel(void *_reserved1 __attribute__ ((unused)), struct platform_info *pi
 
     sti();
 
-    //sched_start();
+//    sched_start();
 
     while(1)
         hlt();
@@ -126,23 +129,23 @@ void
 isr_exception(uint32_t vec, uint64_t rip, uint64_t cs, uint64_t rflags,
               uint64_t rsp)
 {
-    puts("!EXCEPTION!\r\n");
-    puts("VEC: ");
-    puth(vec, 11);
-    puts("\r\n");
-    puts("RIP: ");
-    puth(rip, 11);
-    puts("\r\n");
-    puts("CS: ");
-    puth(cs, 11);
-    puts("\r\n");
-    puts("RFLAGS: ");
-    puth(rflags, 11);
-    puts("\r\n");
-    puts("RSP: ");
-    puth(rsp, 11);
-    puts("\r\n");
-    puts("GOOD BYE!!!!!!\r\n");
+    puts_serial("!EXCEPTION!\r\n");
+    puts_serial("VEC: ");
+    puth_serial(vec, 11);
+    puts_serial("\r\n");
+    puts_serial("RIP: ");
+    puth_serial(rip, 11);
+    puts_serial("\r\n");
+    puts_serial("CS: ");
+    puth_serial(cs, 11);
+    puts_serial("\r\n");
+    puts_serial("RFLAGS: ");
+    puth_serial(rflags, 11);
+    puts_serial("\r\n");
+    puts_serial("RSP: ");
+    puth_serial(rsp, 11);
+    puts_serial("\r\n");
+    puts_serial("GOOD BYE!!!!!!\r\n");
 
     while(1)
         hlt();
@@ -152,26 +155,26 @@ void
 isr_exception_werror(uint32_t vec, uint64_t error, uint64_t rip, uint64_t cs,
                      uint64_t rflags, uint64_t rsp)
 {
-    puts("!EXCEPTION!\r\n");
-    puts("VEC: ");
-    puth(vec, 11);
-    puts("\r\n");
-    puts("ERROR: ");
-    puth(error, 11);
-    puts("\r\n");
-    puts("RIP: ");
-    puth(rip, 11);
-    puts("\r\n");
-    puts("CS: ");
-    puth(cs, 11);
-    puts("\r\n");
-    puts("RFLAGS: ");
-    puth(rflags, 11);
-    puts("\r\n");
-    puts("RSP: ");
-    puth(rsp, 11);
-    puts("\r\n");
-    puts("GOOD BYE!!!!!!\r\n");
+    puts_serial("!EXCEPTION!\r\n");
+    puts_serial("VEC: ");
+    puth_serial(vec, 11);
+    puts_serial("\r\n");
+    puts_serial("ERROR: ");
+    puth_serial(error, 11);
+    puts_serial("\r\n");
+    puts_serial("RIP: ");
+    puth_serial(rip, 11);
+    puts_serial("\r\n");
+    puts_serial("CS: ");
+    puth_serial(cs, 11);
+    puts_serial("\r\n");
+    puts_serial("RFLAGS: ");
+    puth_serial(rflags, 11);
+    puts_serial("\r\n");
+    puts_serial("RSP: ");
+    puth_serial(rsp, 11);
+    puts_serial("\r\n");
+    puts_serial("GOOD BYE!!!!!!\r\n");
 
     while(1)
         hlt();

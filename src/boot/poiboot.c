@@ -76,7 +76,7 @@ void efi_main(void *ImageHandle, struct EFI_SYSTEM_TABLE *SystemTable)
                &pi.map.mem_desc_unit_size, &pi.map.desc_ver);
 
     puts(L"hoge: ");
-    puth(pi.map.mem_desc, 10);
+    puth(pi.fb.base, 10);
     puts(L"\r\n");
 
     struct EFI_MEMORY_DESCRIPTOR *p =

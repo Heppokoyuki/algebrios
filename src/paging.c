@@ -12,22 +12,32 @@ init_kernel_page_table(void)
     uint64_t *pml4;
     uint64_t *pdpt;
     uint64_t *pd;
-    uint64_t *pt;
 
     base = KERNEL_PAGE_TABLE_BASE_ADDRESS;
 
+    /* zero clear all entries */
+    for(int i = 0; i < 512; ++i) {
+        pml4[i] = 0;
+    }
+
+    /*
+      +---------------------------------------+
+      | index |           address             |
+      +---------------------------------------+
+      | pml4  |KERNEL_PAGE_TABLE_BASE_ADDRESS |
+      +---------------------------------------+
+      | pdpt |        pml4 + 0x1000           |
+      +---------------------------------------+
+      |  pd  |        pml4 + 0x2000           |
+      +---------------------------------------+
+    */
+
     /* PML4E */
     pml4 = (uint64_t *)base;
-    /* zero clear PML4E */
-    for(int i = 0; i < 512; ++i)
-        pml4[i] = 0;
     pml4[0] = (base + 0x1000) | 0x07;
 
     /* PDPTE */
     pdpt = (uint64_t *)(base + 0x1000);
-    /* zero clear PDPTE */
-    for(uint64_t i = 0; i < 512; ++i)
-        pdpt[i] = 0;
     for(uint64_t i = 0; i < 4; ++i) {
         pdpt[i] = (base + 0x2000 + 0x1000 * i) | 0x07;
     }
@@ -35,13 +45,7 @@ init_kernel_page_table(void)
     /* PDE */
     pd = (uint64_t *)(base + 0x2000);
     for(uint64_t i = 0; i < 512 * 4; ++i) {
-        pd[i] = (base + 0x6000 + 0x1000 * i) | 0x07;
-    }
-
-    /* PTE */
-    pt = (uint64_t *)(base + 0x6000);
-    for(uint64_t i = 0; i < 512 * 512 * 4; ++i) {
-        pt[i] = (0x1000 * i) | 0x07;
+        pd[i] = (uint64_t)(i * 0x00200000) | 0x083;
     }
 
     set_cr3(base);

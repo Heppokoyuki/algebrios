@@ -1,5 +1,7 @@
     .globl inb
     .globl outb
+    .globl outl
+    .globl inl
     .globl cli
     .globl sti
     .globl hlt
@@ -23,6 +25,20 @@ outb:
     movw %di, %dx
     movb %sil, %al
     outb %al, %dx
+    ret
+
+    /** uint32_t inl(uint16_t port) **/
+inl:
+    movw %di, %dx
+    xorq %rax, %rax
+    inl %dx, %eax
+    ret
+
+    /** void outl(uint16_t port, uint32_t value) **/
+outl:
+    movw %di, %dx
+    movl %esi, %eax
+    outl %eax, %dx
     ret
     
     /** void hlt(void) **/
@@ -61,6 +77,11 @@ sidt:
 
     /** void set_cr3(uint64_t cr3) **/
 set_cr3:    
-    movq %cr3, %rdi
+    movq %rdi, %cr3
+    ret
+
+    /** void set_rsp(uint64_t rsp) **/
+set_rsp:
+    movq %rdi, %rsp
     ret
 

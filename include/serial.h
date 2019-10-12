@@ -16,6 +16,7 @@ uint8_t is_transmit_empty(void);
 void write_serial(char a);
 void putc_serial(char a);
 void puts_serial(char *a);
+void puth_serial(unsigned long long val, unsigned char num_digits);
 
 #endif
 
